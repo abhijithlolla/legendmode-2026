@@ -5,10 +5,14 @@ import ScoreCard from "@/components/ScoreCard";
 import PowerUps from "@/components/PowerUps";
 import Calendar from "@/components/Calendar";
 import Charts from "@/components/Charts";
+import AuthPanel from "@/components/AuthPanel";
 import { BASE_MAX, DayEntry, HABITS, POWER_UPS, PowerPurchase, PowerUp } from "@/lib/habits";
 import { fmt } from "@/lib/date";
 import { levelFromPoints, scoreDay } from "@/lib/scoring";
 import { load, save } from "@/lib/storage";
+import { pullDays, pullPurchases, pushDay, pushPurchase } from "@/lib/sync";
+import { supabase } from "@/lib/supabase";
+import { confettiBurst, confettiMega } from "@/lib/confetti";
 
 export default function Home() {
   const todayKey = fmt(new Date());
@@ -17,6 +21,8 @@ export default function Home() {
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [streakDays, setStreakDays] = useState<number>(0);
   const [powerPurchases, setPowerPurchases] = useState<PowerPurchase[]>([]);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string>("");
 
   // load from localStorage
   useEffect(() => {
@@ -25,12 +31,13 @@ export default function Home() {
     setTotalPoints(p.totalPoints);
     setStreakDays(p.streakDays);
     setPowerPurchases(p.powerPurchases);
+    setLastSyncedAt(p.lastSyncedAt ?? null);
   }, []);
 
   // persist to localStorage
   useEffect(() => {
-    save({ days, totalPoints, streakDays, powerPurchases });
-  }, [days, totalPoints, streakDays, powerPurchases]);
+    save({ days, totalPoints, streakDays, powerPurchases, lastSyncedAt });
+  }, [days, totalPoints, streakDays, powerPurchases, lastSyncedAt]);
 
   const entry = days[selected] ?? {
     date: selected,
@@ -48,6 +55,9 @@ export default function Home() {
 
   function recomputeFor(dateKey: string, completed: Record<string, boolean>) {
     // streak counts consecutive pass days up to today
+    const prev = days[dateKey];
+    const prevPass = prev?.pass ?? false;
+    const prevPerfect = prev?.perfect ?? false;
     const current = scoreDay(dateKey, completed, streakDays);
     const newDays = { ...days, [dateKey]: current };
 
@@ -68,10 +78,28 @@ export default function Home() {
     setDays(newDays);
     setStreakDays(newStreak);
     setTotalPoints(newTotal);
+
+    // background push if signed in
+    if (supabase) {
+      supabase.auth.getUser().then(({ data }) => {
+        if (data.user) pushDay(dateKey, current).catch(() => {});
+      });
+    }
+
+    // celebratory confetti for milestones
+    if (current.perfect && !prevPerfect) {
+      void confettiMega();
+    } else if (current.pass && !prevPass) {
+      void confettiBurst();
+    }
   }
 
   function toggleHabit(id: string) {
-    const completed = { ...entry.completed, [id]: !entry.completed[id] };
+    const nowTrue = !entry.completed[id];
+    const completed = { ...entry.completed, [id]: nowTrue };
+    if (nowTrue) {
+      void confettiBurst(0.8);
+    }
     recomputeFor(selected, completed);
   }
 
@@ -84,6 +112,12 @@ export default function Home() {
     if (availablePoints < power.cost) return;
     const rec: PowerPurchase = { id: crypto.randomUUID(), date: fmt(new Date()), powerUpId: power.id, cost: power.cost };
     setPowerPurchases((arr) => [...arr, rec]);
+    // background push if signed in
+    if (supabase) {
+      supabase.auth.getUser().then(({ data }) => {
+        if (data.user) pushPurchase(rec).catch(() => {});
+      });
+    }
   }
 
   const level = levelFromPoints(totalPoints);
@@ -97,6 +131,44 @@ export default function Home() {
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 py-4 space-y-4">
+        <AuthPanel />
+
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              // Pull from Supabase and merge
+              setSyncStatus("Syncing...");
+              const [remoteDays, remotePurch] = await Promise.all([pullDays(), pullPurchases()]);
+              // naive merge: remote overwrites same dates; purchases concatenated (dedupe by id)
+              const mergedDays = { ...days, ...remoteDays };
+              const existing = new Map(powerPurchases.map((p) => [p.id, p]));
+              for (const r of remotePurch) existing.set(r.id, r);
+              const mergedPurch = Array.from(existing.values());
+
+              // recompute totals from merged days
+              const newTotal = Object.values(mergedDays).reduce((s, e) => s + e.scoreWithBonuses, 0);
+              setDays(mergedDays);
+              setTotalPoints(newTotal);
+              setPowerPurchases(mergedPurch);
+              const ts = new Date().toISOString();
+              setLastSyncedAt(ts);
+              setSyncStatus("Synced");
+              setTimeout(() => setSyncStatus(""), 2000);
+            }}
+            className="rounded-lg border border-zinc-700 px-3 py-1 text-xs hover:bg-zinc-800"
+          >
+            Sync Now
+          </button>
+          {lastSyncedAt && (
+            <div className="self-center text-xs text-zinc-400">
+              Last synced: {new Date(lastSyncedAt).toLocaleString()}
+            </div>
+          )}
+          {syncStatus && (
+            <div className="self-center text-xs text-[color:var(--accent-pass)]">{syncStatus}</div>
+          )}
+        </div>
+
         <ScoreCard
           date={selected}
           basePoints={entry.basePoints}
@@ -109,7 +181,7 @@ export default function Home() {
           level={level}
         />
 
-        <Calendar selected={selected} onSelect={setSelected} />
+        <Calendar selected={selected} days={days} onSelect={setSelected} />
 
         <div className="rounded-2xl border border-zinc-800 p-4 bg-zinc-900/50">
           <div className="mb-3 flex items-center justify-between">
