@@ -13,6 +13,8 @@ import { load, save } from "@/lib/storage";
 import { pullDays, pullPurchases, pushDay, pushPurchase } from "@/lib/sync";
 import { supabase } from "@/lib/supabase";
 import { confettiBurst, confettiMega } from "@/lib/confetti";
+import ProgressBar from "@/components/ProgressBar";
+import { countRecentPasses, getMantra } from "@/lib/motivation";
 
 export default function Home() {
   const todayKey = fmt(new Date());
@@ -23,6 +25,7 @@ export default function Home() {
   const [powerPurchases, setPowerPurchases] = useState<PowerPurchase[]>([]);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<string>("");
+  const [minimalMode, setMinimalMode] = useState<boolean>(false);
 
   // load from localStorage
   useEffect(() => {
@@ -32,12 +35,13 @@ export default function Home() {
     setStreakDays(p.streakDays);
     setPowerPurchases(p.powerPurchases);
     setLastSyncedAt(p.lastSyncedAt ?? null);
+    setMinimalMode(p.minimalMode ?? false);
   }, []);
 
   // persist to localStorage
   useEffect(() => {
-    save({ days, totalPoints, streakDays, powerPurchases, lastSyncedAt });
-  }, [days, totalPoints, streakDays, powerPurchases, lastSyncedAt]);
+    save({ days, totalPoints, streakDays, powerPurchases, lastSyncedAt, minimalMode });
+  }, [days, totalPoints, streakDays, powerPurchases, lastSyncedAt, minimalMode]);
 
   const entry = days[selected] ?? {
     date: selected,
@@ -121,16 +125,29 @@ export default function Home() {
   }
 
   const level = levelFromPoints(totalPoints);
+  const recentPassCount = countRecentPasses(Object.values(days));
+  const mantra = getMantra(streakDays, entry, recentPassCount);
+  const compact = minimalMode;
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b border-zinc-800 bg-[#1a1a1a]/80 backdrop-blur">
-        <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Legend Mode 2026</h1>
-          <div className="text-sm text-zinc-400">Be consistent. Become a legend.</div>
+        <div className={`mx-auto max-w-3xl px-4 ${compact ? "py-2" : "py-3"} flex items-center justify-between`}>
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-semibold">Legend Mode 2026</h1>
+            <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs">🔥 {streakDays}d</span>
+          </div>
+          <button
+            onClick={() => setMinimalMode((v) => !v)}
+            className="rounded-lg border border-zinc-700 px-2 py-1 text-xs hover:bg-zinc-800"
+            aria-label="Toggle minimal mode"
+          >
+            {minimalMode ? "Comfort" : "Minimal"}
+          </button>
         </div>
+        <div className="mx-auto max-w-3xl px-4 pb-2 text-xs text-zinc-400">{mantra}</div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-4 space-y-4">
+      <main className={`mx-auto max-w-3xl px-4 ${compact ? "py-3 space-y-3" : "py-4 space-y-4"}`}>
         <AuthPanel />
 
         <div className="flex gap-2">
@@ -180,10 +197,11 @@ export default function Home() {
           streakDays={streakDays}
           level={level}
         />
+        <ProgressBar value={entry.basePoints} pass={entry.pass} perfect={entry.perfect} />
 
         <Calendar selected={selected} days={days} onSelect={setSelected} />
 
-        <div className="rounded-2xl border border-zinc-800 p-4 bg-zinc-900/50">
+        <div className={`rounded-2xl border border-zinc-800 ${compact ? "p-3" : "p-4"} bg-zinc-900/50`}>
           <div className="mb-3 flex items-center justify-between">
             <div className="text-sm text-zinc-400">10 Daily Habits</div>
             <div className="flex gap-2">
@@ -194,7 +212,7 @@ export default function Home() {
           <HabitList completed={entry.completed} onToggle={toggleHabit} />
         </div>
 
-        <Charts days={days} />
+        {!compact && <Charts days={days} />}
 
         <PowerUps availablePoints={availablePoints} onPurchase={purchase} />
 

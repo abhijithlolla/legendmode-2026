@@ -12,20 +12,22 @@ export type Persisted = {
   streakDays: number;
   powerPurchases: PowerPurchase[];
   lastSyncedAt?: string | null;
+  minimalMode?: boolean;
 };
 
 export function load(): Persisted {
   if (typeof window === "undefined")
-    return { days: {}, totalPoints: 0, streakDays: 0, powerPurchases: [], lastSyncedAt: null };
+    return { days: {}, totalPoints: 0, streakDays: 0, powerPurchases: [], lastSyncedAt: null, minimalMode: false };
   try {
     const days = JSON.parse(localStorage.getItem(DAYS_KEY) || "{}") as Record<string, DayEntry>;
     const totalPoints = parseInt(localStorage.getItem(TOTAL_KEY) || "0", 10) || 0;
     const streakDays = parseInt(localStorage.getItem(STREAK_KEY) || "0", 10) || 0;
     const powerPurchases = JSON.parse(localStorage.getItem(POWER_KEY) || "[]") as PowerPurchase[];
     const lastSyncedAt = localStorage.getItem(SYNCED_KEY);
-    return { days, totalPoints, streakDays, powerPurchases, lastSyncedAt };
+    const minimalMode = localStorage.getItem("legendmode.minimalMode.v1") === "1";
+    return { days, totalPoints, streakDays, powerPurchases, lastSyncedAt, minimalMode };
   } catch {
-    return { days: {}, totalPoints: 0, streakDays: 0, powerPurchases: [], lastSyncedAt: null };
+    return { days: {}, totalPoints: 0, streakDays: 0, powerPurchases: [], lastSyncedAt: null, minimalMode: false };
   }
 }
 
@@ -36,4 +38,5 @@ export function save(p: Persisted) {
   localStorage.setItem(STREAK_KEY, String(p.streakDays));
   localStorage.setItem(POWER_KEY, JSON.stringify(p.powerPurchases));
   if (p.lastSyncedAt) localStorage.setItem(SYNCED_KEY, p.lastSyncedAt);
+  localStorage.setItem("legendmode.minimalMode.v1", p.minimalMode ? "1" : "0");
 }
