@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import HabitList from "@/components/HabitList";
 import ScoreCard from "@/components/ScoreCard";
 import PowerUps from "@/components/PowerUps";
@@ -17,6 +18,7 @@ import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
 
 export default function Home() {
+  const router = useRouter();
   const todayKey = fmt(new Date());
   const [selected, setSelected] = useState<string>(todayKey);
   const [days, setDays] = useState<Record<string, DayEntry>>({});
@@ -26,6 +28,7 @@ export default function Home() {
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<string>("");
   const [minimalMode, setMinimalMode] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
 
   // load from localStorage
   useEffect(() => {
@@ -37,6 +40,29 @@ export default function Home() {
     setLastSyncedAt(p.lastSyncedAt ?? null);
     setMinimalMode(p.minimalMode ?? false);
   }, []);
+
+  // Require auth: if Supabase is configured and user not signed in, redirect to /auth
+  useEffect(() => {
+    let unsub: (() => void) | undefined;
+    if (!supabase) {
+      // If Supabase isn't configured, skip gating to allow local-only mode
+      setAuthChecked(true);
+      return;
+    }
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) {
+        router.replace("/auth");
+      }
+      setAuthChecked(true);
+    });
+    const sub = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session?.user) router.replace("/auth");
+    });
+    unsub = () => sub.data.subscription.unsubscribe();
+    return () => {
+      unsub?.();
+    };
+  }, [router]);
 
   // persist to localStorage
   useEffect(() => {
@@ -128,6 +154,14 @@ export default function Home() {
   const recentPassCount = countRecentPasses(Object.values(days));
   const mantra = getMantra(streakDays, entry, recentPassCount);
   const compact = minimalMode;
+
+  if (supabase && !authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-zinc-400">
+        Checking authentication...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
