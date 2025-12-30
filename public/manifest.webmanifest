@@ -1,0 +1,16 @@
+{
+  "name": "Legend Mode 2026",
+  "short_name": "LegendMode",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "description": "Daily habit tracker PWA with points, streaks, and power-ups.",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

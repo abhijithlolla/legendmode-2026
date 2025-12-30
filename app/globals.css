@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #1a1a1a;
+  --foreground: #ededed;
+  --accent-pass: #00ff88; /* PASS green */
+  --accent-points: #ffd700; /* gold */
 }
 
 @theme inline {
@@ -12,9 +14,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Already dark by default; keep media rule for systems expecting it */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #1a1a1a;
     --foreground: #ededed;
   }
 }
