@@ -1,4 +1,4 @@
-RocketBackground.tsx"use client";
+"use client";
 import { useEffect, useState } from "react";
 
 interface Rocket {
@@ -31,40 +31,42 @@ export default function RocketBackground() {
     return () => clearInterval(interval);
   }, [nextId]);
 
+  const styles = `
+    @keyframes rocketFly {
+      0% {
+        opacity: 1;
+        transform: translateY(100vh) rotate(45deg);
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-100vh) rotate(45deg);
+      }
+    }
+    
+    @keyframes rocketGlow {
+      0%, 100% {
+        filter: drop-shadow(0 0 5px rgba(255, 100, 0, 0.5));
+      }
+      50% {
+        filter: drop-shadow(0 0 15px rgba(255, 100, 0, 0.8));
+      }
+    }
+    
+    .rocket {
+      position: fixed;
+      pointer-events: none;
+      font-size: 28px;
+      z-index: 5;
+      animation: rocketGlow 0.3s ease-in-out infinite;
+    }
+  `;
+
   return (
     <>
-      <style>{`
-        @keyframes rocketFly {
-          0% {
-            opacity: 1;
-            transform: translateY(100vh) rotate(45deg);
-          }
-          90% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-100vh) rotate(45deg);
-          }
-        }
-        
-        @keyframes rocketGlow {
-          0%, 100% {
-            filter: drop-shadow(0 0 5px rgba(255, 100, 0, 0.5));
-          }
-          50% {
-            filter: drop-shadow(0 0 15px rgba(255, 100, 0, 0.8));
-          }
-        }
-        
-        .rocket {
-          position: fixed;
-          pointer-events: none;
-          font-size: 28px;
-          z-index: 5;
-          animation: rocketGlow 0.3s ease-in-out infinite;
-        }
-      `}</style>
+      <style>{styles}</style>
       {rockets.map((rocket) => (
         <div
           key={rocket.id}
