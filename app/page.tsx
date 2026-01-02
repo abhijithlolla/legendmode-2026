@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { confettiBurst, confettiMega } from "@/lib/confetti";
 import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
+import RocketBackground from "@/components/RocketBackground";
 
 export default function Home() {
   const router = useRouter();
@@ -165,6 +166,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+            <RocketBackground />
       <header className="sticky top-0 z-10 border-b border-zinc-800 bg-[#1a1a1a]/80 backdrop-blur">
         <div className={`mx-auto max-w-3xl px-4 ${compact ? "py-2" : "py-3"} flex items-center justify-between`}>
           <div className="flex items-center gap-3">
