@@ -13,8 +13,7 @@ interface Rocket {
 const ROCKET_SIZE = 8;
 const TRAIL_LENGTH = 50;
 const ROCKETS_PER_CYCLE = 1;
-const CYCLE_INTERVAL = 12000; // 12 seconds between rocket launches
-
+const CYCLE_INTERVAL = 800; // ~20 rockets on screen at once
 export default function RocketBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rocketsRef = useRef<Rocket[]>([]);
