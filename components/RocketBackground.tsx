@@ -8,12 +8,14 @@ interface Rocket {
   vy: number;
   life: number;
   trail: Array<{ x: number; y: number; alpha: number }>;
+    color: string;
 }
 
 const ROCKET_SIZE = 8;
 const TRAIL_LENGTH = 50;
 const ROCKETS_PER_CYCLE = 1;
 const CYCLE_INTERVAL = 800; // ~20 rockets on screen at once
+const ROCKET_COLORS = [{rgb: "255, 215, 0", name: "Gold"}, {rgb: "192, 192, 192", name: "Silver"}, {rgb: "255, 255, 255", name: "White"}];
 export default function RocketBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rocketsRef = useRef<Rocket[]>([]);
@@ -50,8 +52,8 @@ const angle = Math.PI * (0.25 + Math.random() * 0.5); // 45-90 degrees for full 
           vx: Math.cos(angle) * speed,
           vy: -Math.sin(angle) * speed,
           life: 1,
-          trail: []
-        };
+          trail: [],
+      color: ROCKET_COLORS[Math.floor(Math.random() * ROCKET_COLORS.length)].rgb        };
         rocketsRef.current.push(rocket);
       }
     }, CYCLE_INTERVAL);
