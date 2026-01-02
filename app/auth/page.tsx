@@ -7,6 +7,12 @@ export default function AuthPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string>("");
+  const [redirectUrl, setRedirectUrl] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    // Set redirect URL only on client side
+    setRedirectUrl(window.location.origin);
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -28,7 +34,7 @@ export default function AuthPage() {
     setStatus("Sending magic link...");
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+      options: { emailRedirectTo: redirectUrl },
     });
     setStatus(error ? `Error: ${error.message}` : "Check your email for the login link.");
   }
