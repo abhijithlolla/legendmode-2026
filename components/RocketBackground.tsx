@@ -42,7 +42,8 @@ const startX = canvas.width * (0 + Math.random() * 0.15); // Start from left edg
         
         
         // Velocity: upward and slightly diagonal
-const angle = Math.PI * (0.25 + Math.random() * 0.5); // 45-90 degrees for full screen traverseconst speed = 5 + Math.random() * 3; // pixels per frame - increased for full screen travel        
+const angle = Math.PI * (0.25 + Math.random() * 0.5); // 45-90 degrees for full screen traverse
+        const speed = 5 + Math.random() * 3; // pixels per frame - increased for full screen travel        
         const rocket: Rocket = {
           x: startX,
           y: startY,
