@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface Rocket {
   id: number;
@@ -11,16 +11,14 @@ interface Rocket {
 }
 
 export default function RocketBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rockets, setRockets] = useState<Rocket[]>([]);
   const [nextId, setNextId] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Start from bottom-left area
       const startX = Math.random() * 20 - 10;
       const startY = 110;
-      
-      // End at top-right area
       const endX = 100 + Math.random() * 20;
       const endY = -10;
       
@@ -30,7 +28,7 @@ export default function RocketBackground() {
         startY,
         endX,
         endY,
-        duration: 12 + Math.random() * 4,
+        duration: 14 + Math.random() * 5,
       };
       
       setRockets((prev) => [...prev, newRocket]);
@@ -39,7 +37,7 @@ export default function RocketBackground() {
       setTimeout(() => {
         setRockets((prev) => prev.filter((r) => r.id !== newRocket.id));
       }, newRocket.duration * 1000);
-    }, 5000);
+    }, 6000);
     
     return () => clearInterval(interval);
   }, []);
@@ -47,20 +45,18 @@ export default function RocketBackground() {
   return (
     <>
       <style>{`
-        @keyframes rocketFly {
+        @keyframes rocketPath {
           0% {
             opacity: 0;
-            transform: translate(0, 0);
           }
-          5% {
-            opacity: 1;
+          3% {
+            opacity: 0.8;
           }
-          95% {
-            opacity: 1;
+          97% {
+            opacity: 0.6;
           }
           100% {
             opacity: 0;
-            transform: translate(var(--tx), var(--ty));
           }
         }
         
@@ -75,29 +71,27 @@ export default function RocketBackground() {
           overflow: hidden;
         }
         
-        .rocket-trail {
+        .rocket {
           position: absolute;
-          will-change: transform;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(220,180,100,0.7), rgba(200,100,50,0.3));
+          box-shadow: 0 0 8px rgba(220,180,100,0.6), 0 0 15px rgba(200,120,60,0.4);
+          animation: rocketPath var(--duration) linear forwards;
+          filter: blur(0.5px);
         }
         
-        .trail-line {
+        .rocket-trail {
           position: absolute;
-          background: linear-gradient(90deg, 
-            rgba(255, 100, 0, 0) 0%, 
-            rgba(255, 150, 0, 0.4) 15%,
-            rgba(255, 200, 0, 1) 50%, 
-            rgba(255, 150, 0, 0.4) 85%,
-            rgba(255, 100, 0, 0) 100%);
+          pointer-events: none;
+          opacity: 0.15;
+        }
+        
+        .trail-segment {
+          position: absolute;
+          background: linear-gradient(90deg, transparent, rgba(220,180,100,0.4), transparent);
           border-radius: 50%;
-          box-shadow: 
-            0 0 20px rgba(255, 200, 100, 1),
-            0 0 40px rgba(255, 150, 0, 0.9),
-            0 0 60px rgba(255, 100, 0, 0.7),
-            0 0 100px rgba(255, 50, 0, 0.4),
-            inset 0 0 20px rgba(255, 255, 200, 0.6);
-          filter: drop-shadow(0 0 20px rgba(255, 200, 100, 0.9)) 
-                  drop-shadow(0 0 40px rgba(255, 100, 0, 0.7)) 
-                  drop-shadow(0 0 60px rgba(255, 50, 0, 0.4));
         }
       `}</style>
       
@@ -109,27 +103,42 @@ export default function RocketBackground() {
           const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
           
           return (
-            <div
-              key={rocket.id}
-              className="rocket-trail"
-              style={{
-                left: `${rocket.startX}%`,
-                top: `${rocket.startY}%`,
-                animation: `rocketFly ${rocket.duration}s linear forwards`,
-                '--tx': `${deltaX}vw`,
-                '--ty': `${deltaY}vh`,
-              } as React.CSSProperties & { '--tx': string; '--ty': string }}
-            >
+            <div key={rocket.id}>
+              {/* Trail segments for faint trail effect */}
+              {[...Array(8)].map((_, i) => {
+                const progress = i / 8;
+                const trailX = rocket.startX + deltaX * progress;
+                const trailY = rocket.startY + deltaY * progress;
+                const segmentOpacity = 0.4 - progress * 0.3;
+                
+                return (
+                  <div
+                    key={`trail-${i}`}
+                    className="trail-segment"
+                    style={{
+                      left: `${trailX}%`,
+                      top: `${trailY}%`,
+                      width: '4px',
+                      height: '4px',
+                      opacity: segmentOpacity * 0.3,
+                      animation: `rocketPath ${rocket.duration}s linear forwards`,
+                      animationDelay: `${-rocket.duration * progress}s`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  />
+                );
+              })}
+              
+              {/* Main rocket */}
               <div
-                className="trail-line"
+                className="rocket"
                 style={{
-                  width: `${distance * 1.5}px`,
-                  height: "14px",
-                  transform: `rotate(${angle}deg)`,
-                  transformOrigin: "left center",
-                  marginLeft: "0px",
-                  marginTop: "-7px",
-                }}
+                  left: `${rocket.startX}%`,
+                  top: `${rocket.startY}%`,
+                  animation: `rocketPath ${rocket.duration}s linear forwards`,
+                  '--duration': `${rocket.duration}s`,
+                  transform: `translate(0, ${-rocket.startY + rocket.endY}vh) translateX(${deltaX}vw)`,
+                } as React.CSSProperties & { '--duration': string }}
               />
             </div>
           );
