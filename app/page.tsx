@@ -65,11 +65,12 @@ export default function Home() {
 
   // Auto-sync with Supabase on app load
   useEffect(() => {
-    if (!supabase || !authChecked) return;
+    68
+      return;
     
     const syncData = async () => {
       try {
-        const synced = await autoSync(days, powerPurchases);
+if (!authChecked) return;
         setDays(synced.days);
         setPowerPurchases(synced.purchases);
         setLastSyncedAt(new Date().toISOString());
