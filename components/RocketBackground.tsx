@@ -1,212 +1,194 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface Rocket {
-  id: number;
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
-  duration: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  trail: Array<{ x: number; y: number; alpha: number }>;
 }
 
+const ROCKET_SIZE = 8;
+const TRAIL_LENGTH = 50;
+const ROCKETS_PER_CYCLE = 1;
+const CYCLE_INTERVAL = 12000; // 12 seconds between rocket launches
+
 export default function RocketBackground() {
-  const [rockets, setRockets] = useState<Rocket[]>([]);
-  const [nextId, setNextId] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rocketsRef = useRef<Rocket[]>([]);
+  const animationRef = useRef<number>();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Distant wide-angle perspective launch
-      const startX = 40 + Math.random() * 20 - 10;
-      const startY = 110;
-      const endX = 50 + Math.random() * 10;
-      const endY = -20;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      const newRocket: Rocket = {
-        id: nextId,
-        startX,
-        startY,
-        endX,
-        endY,
-        duration: 15 + Math.random() * 5,
-      };
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      setRockets((prev) => [...prev, newRocket]);
-      setNextId((prev) => prev + 1);
+    // Set canvas size
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
-      setTimeout(() => {
-        setRockets((prev) => prev.filter((r) => r.id !== newRocket.id));
-      }, newRocket.duration * 1000);
-    }, 12000);
+    // Create new rockets at intervals
+    const launchInterval = setInterval(() => {
+      for (let i = 0; i < ROCKETS_PER_CYCLE; i++) {
+        const startX = canvas.width * (0.4 + Math.random() * 0.2);
+        const startY = canvas.height * 0.85;
+        
+        // Velocity: upward and slightly diagonal
+        const angle = Math.PI * (0.4 + Math.random() * 0.2); // 72-108 degrees
+        const speed = 2 + Math.random() * 1; // pixels per frame
+        
+        const rocket: Rocket = {
+          x: startX,
+          y: startY,
+          vx: Math.cos(angle) * speed,
+          vy: -Math.sin(angle) * speed,
+          life: 1,
+          trail: []
+        };
+        rocketsRef.current.push(rocket);
+      }
+    }, CYCLE_INTERVAL);
 
-    return () => clearInterval(interval);
+    // Animation loop
+    const animate = () => {
+      // Clear canvas with semi-transparent overlay
+      ctx.fillStyle = "rgba(20, 20, 30, 0.15)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw rockets
+      const rockets = rocketsRef.current;
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const rocket = rockets[i];
+
+        // Apply gravity
+        rocket.vy += 0.02;
+        rocket.x += rocket.vx;
+        rocket.y += rocket.vy;
+        rocket.life -= 0.008;
+
+        // Add to trail
+        rocket.trail.push({
+          x: rocket.x,
+          y: rocket.y,
+          alpha: rocket.life * 0.8
+        });
+
+        if (rocket.trail.length > TRAIL_LENGTH) {
+          rocket.trail.shift();
+        }
+
+        // Draw trail
+        if (rocket.trail.length > 1) {
+          for (let j = 0; j < rocket.trail.length - 1; j++) {
+            const p1 = rocket.trail[j];
+            const p2 = rocket.trail[j + 1];
+            const alpha = (p1.alpha * (j / rocket.trail.length)) * 0.6;
+
+            // Trail glow effect
+            const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+            gradient.addColorStop(0, `rgba(255, 255, 240, ${alpha})`);
+            gradient.addColorStop(1, `rgba(200, 220, 255, ${alpha * 0.5})`);
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 2 + (j / rocket.trail.length) * 3;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+
+            // Additional blur/glow
+            ctx.strokeStyle = `rgba(220, 230, 255, ${alpha * 0.3})`;
+            ctx.lineWidth = 6 + (j / rocket.trail.length) * 4;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+
+        // Draw rocket
+        if (rocket.life > 0) {
+          // Rocket glow
+          const glowGradient = ctx.createRadialGradient(
+            rocket.x,
+            rocket.y,
+            0,
+            rocket.x,
+            rocket.y,
+            20
+          );
+          glowGradient.addColorStop(0, `rgba(255, 255, 255, ${rocket.life * 0.6})`);
+          glowGradient.addColorStop(0.5, `rgba(200, 220, 255, ${rocket.life * 0.3})`);
+          glowGradient.addColorStop(1, "rgba(150, 180, 220, 0)");
+
+          ctx.fillStyle = glowGradient;
+          ctx.beginPath();
+          ctx.arc(rocket.x, rocket.y, 20, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Main rocket body
+          const gradient = ctx.createRadialGradient(
+            rocket.x - 1,
+            rocket.y - 1,
+            0,
+            rocket.x,
+            rocket.y,
+            ROCKET_SIZE
+          );
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${rocket.life})`);
+          gradient.addColorStop(0.6, `rgba(240, 240, 255, ${rocket.life * 0.8})`);
+          gradient.addColorStop(1, `rgba(180, 200, 230, ${rocket.life * 0.4})`);
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(rocket.x, rocket.y, ROCKET_SIZE, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Rocket highlight
+          ctx.fillStyle = `rgba(255, 255, 255, ${rocket.life * 0.9})`;
+          ctx.beginPath();
+          ctx.arc(rocket.x - 2, rocket.y - 2, ROCKET_SIZE * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Remove dead rockets
+        if (rocket.life <= 0 || rocket.y < -50) {
+          rockets.splice(i, 1);
+        }
+      }
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      clearInterval(launchInterval);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      window.removeEventListener("resize", resizeCanvas);
+    };
   }, []);
 
   return (
-    <>
-      <style>{`
-        @keyframes rocketAscendRealistic {
-          0% {
-            opacity: 0;
-            transform: translate(0, 0) scale(0.6);
-          }
-          2% {
-            opacity: 0.95;
-          }
-          98% {
-            opacity: 0.9;
-          }
-          100% {
-            opacity: 0;
-            transform: translate(0, -120vh) scale(1.1);
-          }
-        }
-
-        @keyframes trailGlow {
-          0% {
-            opacity: 0;
-          }
-          4% {
-            opacity: 0.8;
-          }
-          100% {
-            opacity: 0;
-          }
-        }
-
-        .rocket-container {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100vh;
-          pointer-events: none;
-          z-index: 1;
-          overflow: hidden;
-          /* Deep twilight sky - realistic aerospace photography */
-          background: linear-gradient(
-            180deg,
-            rgba(90, 110, 140, 0.4) 0%,
-            rgba(110, 130, 160, 0.3) 25%,
-            rgba(130, 140, 160, 0.25) 50%,
-            rgba(150, 145, 140, 0.2) 75%,
-            rgba(160, 150, 145, 0.15) 100%
-          );
-          backdrop-filter: blur(0.5px);
-        }
-
-        /* Ultra-realistic rocket - small, distant perspective */
-        .rocket {
-          position: absolute;
-          width: 6px;
-          height: 6px;
-          border-radius: 2px;
-          background: radial-gradient(
-            circle at 35% 35%,
-            rgba(255, 255, 255, 1),
-            rgba(255, 250, 240, 0.9),
-            rgba(220, 230, 255, 0.4)
-          );
-          box-shadow:
-            0 0 6px rgba(255, 255, 255, 0.85),
-            0 0 12px rgba(210, 230, 255, 0.5),
-            0 0 18px rgba(180, 200, 230, 0.25),
-            inset -1px -1px 3px rgba(255, 255, 255, 0.6);
-          animation: rocketAscendRealistic var(--duration) ease-out forwards;
-          filter: blur(0.15px);
-          will-change: transform, opacity;
-          backface-visibility: hidden;
-        }
-
-        /* Continuous white exhaust trail - key feature */
-        .trail-segment {
-          position: absolute;
-          background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 250, 0.5) 20%,
-            rgba(220, 230, 255, 0.3) 60%,
-            transparent 100%
-          );
-          border-radius: 50%;
-          filter: blur(1.5px);
-          animation: trailGlow var(--duration) ease-out forwards;
-        }
-
-        /* Subtle atmospheric glow */
-        .rocket-atmosphere {
-          position: absolute;
-          border-radius: 50%;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.2),
-            rgba(210, 230, 255, 0.08),
-            transparent
-          );
-          animation: rocketAscendRealistic var(--duration) ease-out forwards;
-          filter: blur(4px);
-        }
-      `}</style>
-
-      <div className="rocket-container">
-        {rockets.map((rocket) => {
-          const deltaX = rocket.endX - rocket.startX;
-          const deltaY = rocket.endY - rocket.startY;
-
-          return (
-            <div key={rocket.id}>
-              {/* Atmospheric glow envelope */}
-              <div
-                className="rocket-atmosphere"
-                style={{
-                  left: `${rocket.startX}%`,
-                  top: `${rocket.startY}%`,
-                  width: '32px',
-                  height: '32px',
-                  '--duration': `${rocket.duration}s`,
-                  transform: `translate(${deltaX}vw, ${deltaY}vh)`,
-                } as React.CSSProperties & { '--duration': string }}
-              />
-
-              {/* Continuous smooth exhaust trail - 28 segments for realism */}
-              {[...Array(28)].map((_, i) => {
-                const progress = i / 28;
-                const trailX = rocket.startX + deltaX * progress;
-                const trailY = rocket.startY + deltaY * progress;
-                const opacity = Math.max(0, 1 - progress * 1.1);
-                const width = 2.5 + progress * 4;
-
-                return (
-                  <div
-                    key={`trail-${i}`}
-                    className="trail-segment"
-                    style={{
-                      left: `${trailX}%`,
-                      top: `${trailY}%`,
-                      width: `${width}px`,
-                      height: '1.5px',
-                      opacity: opacity * 0.7,
-                      '--duration': `${rocket.duration}s`,
-                      animationDelay: `${-rocket.duration * progress}s`,
-                      transform: `translate(-50%, -50%)`,
-                    } as React.CSSProperties & { '--duration': string }}
-                  />
-                );
-              })}
-
-              {/* Main rocket - ultra-realistic with minimal motion blur */}
-              <div
-                className="rocket"
-                style={{
-                  left: `${rocket.startX}%`,
-                  top: `${rocket.startY}%`,
-                  '--duration': `${rocket.duration}s`,
-                } as React.CSSProperties & { '--duration': string }}
-              />
-            </div>
-          );
-        })}
-      </div>
-    </>
+    <canvas
+      ref={canvasRef}
+      className="fixed top-0 left-0 w-full h-screen pointer-events-none"
+      style={{
+        backgroundColor: "rgba(30, 35, 50, 0.3)",
+        zIndex: 1
+      }}
+    />
   );
 }
