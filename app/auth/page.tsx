@@ -49,6 +49,7 @@ export default function AuthPage() {
         setStatus(`Error: ${error.message}`);
       } else {
         setStatus("Signed in!");
+                    router.push("/");
       }
     }
   }
