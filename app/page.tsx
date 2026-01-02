@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
 import RocketBackground from "@/components/RocketBackground";
+import { confettiBurst, confettiMega } from "@/lib/confetti";
 
 export default function Home() {
   const router = useRouter();
