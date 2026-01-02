@@ -11,7 +11,7 @@ import { BASE_MAX, DayEntry, HABITS, POWER_UPS, PowerPurchase, PowerUp } from "@
 import { fmt } from "@/lib/date";
 import { levelFromPoints, scoreDay } from "@/lib/scoring";
 import { load, save } from "@/lib/storage";
-import { pullDays, pullPurchases, pushDay, pushPurchase } from "@/lib/sync";
+import { pullDays, pullPurchases, pushDay, pushPurchase } from "@/pullDays, pullPurchases, pushDay, pushPurchase, autoSync } from "@/lib/sync";
 import { supabase } from "@/lib/supabase";
 import { confettiBurst, confettiMega } from "@/lib/confetti";
 import ProgressBar from "@/components/ProgressBar";
@@ -64,6 +64,24 @@ export default function Home() {
       unsub?.();
     };
   }, [router]);
+
+  // Auto-sync with Supabase on app load
+  useEffect(() => {
+    if (!supabase || !authChecked) return;
+    
+    const syncData = async () => {
+      try {
+        const synced = await autoSync(days, powerPurchases);
+        setDays(synced.days);
+        setPowerPurchases(synced.purchases);
+        setLastSyncedAt(new Date().toISOString());
+      } catch (error) {
+        console.error("Auto-sync on load failed:", error);
+      }
+    };
+    
+    syncData();
+  }, [authChecked]);
 
   // persist to localStorage
   useEffect(() => {
