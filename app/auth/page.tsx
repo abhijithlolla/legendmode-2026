@@ -10,6 +10,7 @@ export default function AuthPage() {
   const [status, setStatus] = useState<string>("");
   const [redirectUrl, setRedirectUrl] = useState<string | undefined>(undefined);
   const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
+  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
     // Set redirect URL only on client side
@@ -27,18 +28,29 @@ export default function AuthPage() {
     return () => sub?.subscription.unsubscribe();
   }, [router]);
 
-  async function handlePasswordLogin(e: React.FormEvent) {
+  async function handlePasswordAuth(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) {
       setStatus("Supabase not configured.");
       return;
     }
-    setStatus("Signing in...");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setStatus(`Error: ${error.message}`);
+
+    setStatus(isSignUp ? "Creating account..." : "Signing in...");
+
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setStatus(`Error: ${error.message}`);
+      } else {
+        setStatus("Account created! Check your email to confirm your account.");
+      }
     } else {
-      setStatus("Signed in!");
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setStatus(`Error: ${error.message}`);
+      } else {
+        setStatus("Signed in!");
+      }
     }
   }
 
@@ -59,8 +71,12 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h1 className="text-lg font-semibold">Sign in to Legend Mode</h1>
-        <p className="mt-1 text-xs text-zinc-400">{authMode === "password" ? "Enter your password" : "We send you a magic link"}</p>
+        <h1 className="text-lg font-semibold">{isSignUp ? "Create Account" : "Sign in to Legend Mode"}</h1>
+        <p className="mt-1 text-xs text-zinc-400">
+          {authMode === "password"
+            ? isSignUp ? "Set up your account with a password" : "Enter your password"
+            : "We send you a magic link"}
+        </p>
         
         <div className="mt-4 flex gap-2 mb-4">
           <button
@@ -86,7 +102,7 @@ export default function AuthPage() {
         </div>
 
         <form
-          onSubmit={authMode === "password" ? handlePasswordLogin : handleMagicLink}
+          onSubmit={authMode === "password" ? handlePasswordAuth : handleMagicLink}
           className="space-y-3"
         >
           <input
@@ -111,10 +127,25 @@ export default function AuthPage() {
             type="submit"
             className="w-full rounded-lg border border-zinc-700 px-3 py-2 text-sm hover:bg-zinc-800"
           >
-            {authMode === "password" ? "Sign In" : "Send magic link"}
+            {authMode === "password"
+              ? isSignUp ? "Create Account" : "Sign In"
+              : "Send magic link"}
           </button>
         </form>
-        {status && <div className="mt-2 text-xs text-zinc-400">{status}</div>}
+
+        {authMode === "password" && (
+          <div className="mt-4 text-center text-xs text-zinc-400">
+            {isSignUp ? "Already have an account? " : "Don't have an account? "}
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-cyan-400 hover:underline"
+            >
+              {isSignUp ? "Sign In" : "Sign Up"}
+            </button>
+          </div>
+        )}
+
+        {status && <div className="mt-4 text-xs text-zinc-400">{status}</div>}
       </div>
     </div>
   );
