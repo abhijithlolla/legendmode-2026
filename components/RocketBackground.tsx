@@ -16,49 +16,64 @@ export default function RocketBackground() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const startX = Math.random() * 20 - 10;
-      const startY = 110;
-      const endX = 100 + Math.random() * 20;
-      const endY = -10;
-      
+      // Stagger rocket launches for natural feel
+      const startX = Math.random() * 30 - 15;
+      const startY = 105;
+      const endX = 60 + Math.random() * 30;
+      const endY = -15;
+
       const newRocket: Rocket = {
         id: nextId,
         startX,
         startY,
         endX,
         endY,
-        duration: 14 + Math.random() * 5,
+        duration: 12 + Math.random() * 4,
       };
-      
+
       setRockets((prev) => [...prev, newRocket]);
       setNextId((prev) => prev + 1);
-      
+
       setTimeout(() => {
         setRockets((prev) => prev.filter((r) => r.id !== newRocket.id));
       }, newRocket.duration * 1000);
-    }, 6000);
-    
+    }, 8000);
+
     return () => clearInterval(interval);
   }, []);
 
   return (
     <>
       <style>{`
-        @keyframes rocketPath {
+        @keyframes rocketAscend {
+          0% {
+            opacity: 0;
+            transform: translate(0, 0) scale(0.8);
+          }
+          3% {
+            opacity: 1;
+          }
+          97% {
+            opacity: 0.95;
+          }
+          100% {
+            opacity: 0;
+            transform: translate(0, -100vh) scale(1);
+          }
+        }
+
+        @keyframes trailFade {
           0% {
             opacity: 0;
           }
-          2% {
+          5% {
             opacity: 1;
-          }
-          98% {
-            opacity: 0.9;
           }
           100% {
             opacity: 0;
           }
         }
-        
+
         .rocket-container {
           position: fixed;
           top: 0;
@@ -68,73 +83,118 @@ export default function RocketBackground() {
           pointer-events: none;
           z-index: 1;
           overflow: hidden;
+          background: linear-gradient(
+            180deg,
+            rgba(100, 120, 200, 0.15) 0%,
+            rgba(150, 100, 200, 0.1) 40%,
+            rgba(200, 150, 100, 0.05) 100%
+          );
         }
-        
+
         .rocket {
           position: absolute;
-          width: 16px;
-          height: 16px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, rgba(255,255,200,1), rgba(255,220,100,0.8), rgba(220,160,60,0.5));
-          box-shadow: 
-            0 0 12px rgba(255,220,100,0.9), 
-            0 0 24px rgba(220,160,60,0.7),
-            0 0 40px rgba(200,120,40,0.4),
-            inset -2px -2px 8px rgba(255,255,150,0.6);
-          animation: rocketPath var(--duration) linear forwards;
-          filter: blur(0.3px);
+          background: radial-gradient(
+            circle at 40% 40%,
+            rgba(255, 255, 255, 1),
+            rgba(255, 255, 255, 0.8),
+            rgba(200, 220, 255, 0.3)
+          );
+          box-shadow:
+            0 0 8px rgba(255, 255, 255, 0.9),
+            0 0 16px rgba(200, 220, 255, 0.6),
+            0 0 24px rgba(150, 180, 255, 0.3),
+            inset -1px -1px 4px rgba(255, 255, 255, 0.7);
+          animation: rocketAscend var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          filter: blur(0.2px);
           will-change: transform, opacity;
+          backface-visibility: hidden;
         }
-        
+
         .trail-segment {
           position: absolute;
-          background: linear-gradient(90deg, transparent, rgba(220,180,100,0.5), transparent);
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 30%,
+            rgba(200, 220, 255, 0.2) 70%,
+            transparent 100%
+          );
           border-radius: 50%;
-          filter: blur(0.8px);
+          filter: blur(1.2px);
+          animation: trailFade var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .rocket-glow {
+          position: absolute;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.3),
+            rgba(200, 220, 255, 0.1),
+            transparent
+          );
+          animation: rocketAscend var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          filter: blur(3px);
         }
       `}</style>
-      
+
       <div className="rocket-container">
         {rockets.map((rocket) => {
           const deltaX = rocket.endX - rocket.startX;
           const deltaY = rocket.endY - rocket.startY;
-          
+
           return (
             <div key={rocket.id}>
-              {/* Trail segments for faint trail effect */}
-              {[...Array(12)].map((_, i) => {
-                const progress = i / 12;
-                const trailX = rocket.startX + deltaX * progress;
-                const trailY = rocket.startY + deltaY * progress;
-                const segmentOpacity = 0.5 - progress * 0.4;
-                
+              {/* Distant glow/aura */}
+              <div
+                className="rocket-glow"
+                style={{
+                  left: `${rocket.startX}%`,
+                  top: `${rocket.startY}%`,
+                  width: '28px',
+                  height: '28px',
+                  '--duration': `${rocket.duration}s`,
+                  transform: `translate(${deltaX}vw, ${deltaY}vh)`,
+                } as React.CSSProperties & { '--duration': string }}
+              />
+
+              {/* Exhaust trail segments - thin and elegant */}
+              {[...Array(20)].map((_, i) => {
+                const progress = i / 20;
+                const trailSegmentX = rocket.startX + (deltaX * progress);
+                const trailSegmentY = rocket.startY + (deltaY * progress);
+                const segmentOpacity = Math.max(0, 1 - progress * 1.2);
+                const segmentWidth = 2 + progress * 3;
+
                 return (
                   <div
                     key={`trail-${i}`}
                     className="trail-segment"
                     style={{
-                      left: `${trailX}%`,
-                      top: `${trailY}%`,
-                      width: '6px',
-                      height: '6px',
-                      opacity: segmentOpacity * 0.25,
-                      animation: `rocketPath ${rocket.duration}s linear forwards`,
+                      left: `${trailSegmentX}%`,
+                      top: `${trailSegmentY}%`,
+                      width: `${segmentWidth}px`,
+                      height: '2px',
+                      opacity: segmentOpacity * 0.6,
+                      '--duration': `${rocket.duration}s`,
                       animationDelay: `${-rocket.duration * progress}s`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
+                      transform: `translate(-50%, -50%)`,
+                    } as React.CSSProperties & { '--duration': string }}
                   />
                 );
               })}
-              
-              {/* Main rocket - NOW MORE VISIBLE */}
+
+              {/* Main rocket - minimalist and bright */}
               <div
                 className="rocket"
                 style={{
                   left: `${rocket.startX}%`,
                   top: `${rocket.startY}%`,
-                  animation: `rocketPath ${rocket.duration}s linear forwards`,
                   '--duration': `${rocket.duration}s`,
-                  transform: `translate(0, ${-rocket.startY + rocket.endY}vh) translateX(${deltaX}vw)`,
+                  transform: `translate(0, 0)`,
                 } as React.CSSProperties & { '--duration': string }}
               />
             </div>
