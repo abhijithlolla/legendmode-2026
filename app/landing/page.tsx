@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { CheckCircle2, Zap, TrendingUp, Users } from "lucide-react";
+import RocketBackground from "@/components/RocketBackground";
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-900 via-zinc-900 to-black text-white">
+            <RocketBackground />
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 border-b border-zinc-800/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
