@@ -41,7 +41,7 @@ export default function RocketBackground() {
     }, 3000);
     
     return () => clearInterval(interval);
-  }, [nextId]);
+  }, []);
 
   return (
     <>
