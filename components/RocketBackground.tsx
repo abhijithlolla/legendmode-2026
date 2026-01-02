@@ -47,17 +47,15 @@ export default function RocketBackground() {
     @keyframes rocketTrail {
       0% {
         opacity: 0;
-        filter: blur(0px);
       }
-      10% {
+      5% {
         opacity: 1;
       }
-      90% {
+      95% {
         opacity: 1;
       }
       100% {
         opacity: 0;
-        filter: blur(1px);
       }
     }
     
@@ -69,9 +67,9 @@ export default function RocketBackground() {
     
     .trail-line {
       position: absolute;
-      background: linear-gradient(90deg, rgba(255, 200, 100, 0) 0%, rgba(255, 200, 100, 0.8) 50%, rgba(255, 150, 50, 0) 100%);
-      box-shadow: 0 0 20px rgba(255, 150, 50, 0.6), 0 0 40px rgba(255, 100, 0, 0.3);
-      filter: drop-shadow(0 0 10px rgba(255, 150, 50, 0.5));
+      background: linear-gradient(90deg, rgba(255, 200, 80, 0) 0%, rgba(255, 255, 150, 1) 20%, rgba(255, 220, 100, 1) 50%, rgba(255, 150, 50, 1) 80%, rgba(255, 100, 0, 0) 100%);
+      box-shadow: 0 0 8px rgba(255, 220, 100, 0.8), 0 0 15px rgba(255, 180, 50, 0.6), 0 0 25px rgba(255, 150, 30, 0.4), 0 0 35px rgba(255, 100, 0, 0.2), inset 0 0 8px rgba(255, 255, 200, 0.4);
+      filter: drop-shadow(0 0 5px rgba(255, 200, 100, 0.8)) drop-shadow(0 0 15px rgba(255, 150, 50, 0.6)) drop-shadow(0 0 25px rgba(255, 100, 0, 0.3));
     }
   `;
 
@@ -98,7 +96,7 @@ export default function RocketBackground() {
               className="trail-line"
               style={{
                 width: `${distance}px`,
-                height: "3px",
+                height: "6px",
                 transform: `rotate(${angle}deg)`,
                 transformOrigin: "left center",
               }}
