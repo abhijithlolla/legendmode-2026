@@ -34,48 +34,57 @@ export default function RocketBackground() {
       
       setRockets((prev) => [...prev, newRocket]);
       setNextId((prev) => prev + 1);
-
+      
       setTimeout(() => {
         setRockets((prev) => prev.filter((r) => r.id !== newRocket.id));
       }, (newRocket.duration + newRocket.delay) * 1000);
     }, 3000);
-
+    
     return () => clearInterval(interval);
   }, [nextId]);
 
-  const styles = `
-    @keyframes rocketTrail {
-      0% {
-        opacity: 0;
-      }
-      5% {
-        opacity: 1;
-      }
-      95% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
-    
-    .rocket-trail {
-      position: fixed;
-      pointer-events: none;
-      z-index: 5;
-    }
-    
-    .trail-line {
-      position: absolute;
-      background: linear-gradient(90deg, rgba(255, 200, 80, 0) 0%, rgba(255, 255, 150, 1) 20%, rgba(255, 220, 100, 1) 50%, rgba(255, 150, 50, 1) 80%, rgba(255, 100, 0, 0) 100%);
-      box-shadow: 0 0 8px rgba(255, 220, 100, 0.8), 0 0 15px rgba(255, 180, 50, 0.6), 0 0 25px rgba(255, 150, 30, 0.4), 0 0 35px rgba(255, 100, 0, 0.2), inset 0 0 8px rgba(255, 255, 200, 0.4);
-      filter: drop-shadow(0 0 5px rgba(255, 200, 100, 0.8)) drop-shadow(0 0 15px rgba(255, 150, 50, 0.6)) drop-shadow(0 0 25px rgba(255, 100, 0, 0.3));
-    }
-  `;
-
   return (
     <>
-      <style>{styles}</style>
+      <style>{`
+        @keyframes rocketTrail {
+          0% {
+            opacity: 0;
+            transform: scale(0.5);
+          }
+          5% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          95% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.5);
+          }
+        }
+        
+        .rocket-trail {
+          position: fixed;
+          pointer-events: none;
+          z-index: 5;
+        }
+        
+        .trail-line {
+          position: absolute;
+          background: linear-gradient(90deg, rgba(255, 150, 0, 0) 0%, rgba(255, 200, 0, 1) 30%, rgba(255, 150, 0, 1) 70%, rgba(255, 100, 0, 0) 100%);
+          border-radius: 3px;
+          box-shadow: 
+            0 0 10px #FF9500,
+            0 0 20px #FF7500,
+            0 0 30px #FF5500,
+            0 0 40px #FF3500,
+            0 0 50px #FF2500,
+            inset 0 0 10px rgba(255, 255, 100, 0.6);
+          filter: drop-shadow(0 0 10px #FFB500) drop-shadow(0 0 20px #FF7500) drop-shadow(0 0 30px #FF4500);
+        }
+      `}</style>
       {rockets.map((rocket) => {
         const deltaX = rocket.endX - rocket.startX;
         const deltaY = rocket.endY - rocket.startY;
@@ -96,7 +105,7 @@ export default function RocketBackground() {
               className="trail-line"
               style={{
                 width: `${distance}px`,
-                height: "6px",
+                height: "8px",
                 transform: `rotate(${angle}deg)`,
                 transformOrigin: "left center",
               }}
