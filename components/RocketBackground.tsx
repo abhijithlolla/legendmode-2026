@@ -1,4 +1,5 @@
-"use client";
+40
+  "use client";
 import { useEffect, useRef } from "react";
 
 interface Rocket {
@@ -37,13 +38,11 @@ export default function RocketBackground() {
     // Create new rockets at intervals
     const launchInterval = setInterval(() => {
       for (let i = 0; i < ROCKETS_PER_CYCLE; i++) {
-        const startX = canvas.width * (0.4 + Math.random() * 0.2);
-        const startY = canvas.height * 0.85;
+const startX = canvas.width * (0 + Math.random() * 0.15); // Start from left edge        const startY = canvas.height * 0.85;
+        
         
         // Velocity: upward and slightly diagonal
-        const angle = Math.PI * (0.4 + Math.random() * 0.2); // 72-108 degrees
-        const speed = 2 + Math.random() * 1; // pixels per frame
-        
+const angle = Math.PI * (0.25 + Math.random() * 0.5); // 45-90 degrees for full screen traverseconst speed = 5 + Math.random() * 3; // pixels per frame - increased for full screen travel        
         const rocket: Rocket = {
           x: startX,
           y: startY,
