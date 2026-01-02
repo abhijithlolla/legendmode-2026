@@ -32,14 +32,19 @@ export default function AuthPanel() {
     await supabase.auth.signOut();
   }
 
-  if (!supabase) {
+if (!supabase) {
     return (
-      <div className="rounded-xl border border-zinc-800 p-4 bg-zinc-900/50 text-sm text-zinc-400">
-        Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_KEY in your environment.
+      <div className="rounded-xl border border-zinc-800 p-4 bg-zinc-900/50">
+        <div className="text-sm font-medium text-yellow-400">⚙️ Setup Required</div>
+        <div className="text-xs text-zinc-400 mt-2">
+          Connect your Supabase credentials to sync your progress across devices.
+        </div>
+        <div className="text-xs text-zinc-500 mt-3">
+          For now, you can track locally. Your data will be saved to this browser.
+        </div>
       </div>
     );
   }
-
   return (
     <div className="rounded-2xl border border-zinc-800 p-4 bg-zinc-900/50">
       <div className="mb-2 text-sm text-zinc-400">Authentication</div>
