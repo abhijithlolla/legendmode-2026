@@ -11,7 +11,6 @@ interface Rocket {
 }
 
 export default function RocketBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [rockets, setRockets] = useState<Rocket[]>([]);
   const [nextId, setNextId] = useState(0);
 
@@ -49,11 +48,11 @@ export default function RocketBackground() {
           0% {
             opacity: 0;
           }
-          3% {
-            opacity: 0.8;
+          2% {
+            opacity: 1;
           }
-          97% {
-            opacity: 0.6;
+          98% {
+            opacity: 0.9;
           }
           100% {
             opacity: 0;
@@ -73,25 +72,25 @@ export default function RocketBackground() {
         
         .rocket {
           position: absolute;
-          width: 8px;
-          height: 8px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(220,180,100,0.7), rgba(200,100,50,0.3));
-          box-shadow: 0 0 8px rgba(220,180,100,0.6), 0 0 15px rgba(200,120,60,0.4);
+          background: radial-gradient(circle at 35% 35%, rgba(255,255,200,1), rgba(255,220,100,0.8), rgba(220,160,60,0.5));
+          box-shadow: 
+            0 0 12px rgba(255,220,100,0.9), 
+            0 0 24px rgba(220,160,60,0.7),
+            0 0 40px rgba(200,120,40,0.4),
+            inset -2px -2px 8px rgba(255,255,150,0.6);
           animation: rocketPath var(--duration) linear forwards;
-          filter: blur(0.5px);
-        }
-        
-        .rocket-trail {
-          position: absolute;
-          pointer-events: none;
-          opacity: 0.15;
+          filter: blur(0.3px);
+          will-change: transform, opacity;
         }
         
         .trail-segment {
           position: absolute;
-          background: linear-gradient(90deg, transparent, rgba(220,180,100,0.4), transparent);
+          background: linear-gradient(90deg, transparent, rgba(220,180,100,0.5), transparent);
           border-radius: 50%;
+          filter: blur(0.8px);
         }
       `}</style>
       
@@ -99,17 +98,15 @@ export default function RocketBackground() {
         {rockets.map((rocket) => {
           const deltaX = rocket.endX - rocket.startX;
           const deltaY = rocket.endY - rocket.startY;
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
           
           return (
             <div key={rocket.id}>
               {/* Trail segments for faint trail effect */}
-              {[...Array(8)].map((_, i) => {
-                const progress = i / 8;
+              {[...Array(12)].map((_, i) => {
+                const progress = i / 12;
                 const trailX = rocket.startX + deltaX * progress;
                 const trailY = rocket.startY + deltaY * progress;
-                const segmentOpacity = 0.4 - progress * 0.3;
+                const segmentOpacity = 0.5 - progress * 0.4;
                 
                 return (
                   <div
@@ -118,9 +115,9 @@ export default function RocketBackground() {
                     style={{
                       left: `${trailX}%`,
                       top: `${trailY}%`,
-                      width: '4px',
-                      height: '4px',
-                      opacity: segmentOpacity * 0.3,
+                      width: '6px',
+                      height: '6px',
+                      opacity: segmentOpacity * 0.25,
                       animation: `rocketPath ${rocket.duration}s linear forwards`,
                       animationDelay: `${-rocket.duration * progress}s`,
                       transform: 'translate(-50%, -50%)',
@@ -129,7 +126,7 @@ export default function RocketBackground() {
                 );
               })}
               
-              {/* Main rocket */}
+              {/* Main rocket - NOW MORE VISIBLE */}
               <div
                 className="rocket"
                 style={{
