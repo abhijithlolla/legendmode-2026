@@ -11,9 +11,7 @@ import { BASE_MAX, DayEntry, HABITS, POWER_UPS, PowerPurchase, PowerUp } from "@
 import { fmt } from "@/lib/date";
 import { levelFromPoints, scoreDay } from "@/lib/scoring";
 import { load, save } from "@/lib/storage";
-import { pullDays, pullPurchases, pushDay, pushPurchase } from "@/pullDays, pullPurchases, pushDay, pushPurchase, autoSync } from "@/lib/sync";
-import { supabase } from "@/lib/supabase";
-import { confettiBurst, confettiMega } from "@/lib/confetti";
+import { pullDays, pullPurchases, pushDay, pushPurchase, autoSync } from "@/lib/sync";
 import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
 import RocketBackground from "@/components/RocketBackground";
