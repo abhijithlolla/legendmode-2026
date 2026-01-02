@@ -12,6 +12,7 @@ import { fmt } from "@/lib/date";
 import { levelFromPoints, scoreDay } from "@/lib/scoring";
 import { load, save } from "@/lib/storage";
 import { pullDays, pullPurchases, pushDay, pushPurchase, autoSync } from "@/lib/sync";
+import { supabase } from "@/lib/supabase";
 import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
 import RocketBackground from "@/components/RocketBackground";
