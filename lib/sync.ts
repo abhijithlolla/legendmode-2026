@@ -67,3 +67,41 @@ export async function pushPurchase(p: PowerPurchase): Promise<void> {
     cost: p.cost,
   });
 }
+
+// Automatic sync: pull latest data from Supabase on app load
+export async function autoSync(localDays: Record<string, DayEntry>, localPurchases: PowerPurchase[]): Promise<{ days: Record<string, DayEntry>; purchases: PowerPurchase[] }> {
+  if (!supabase) {
+    return { days: localDays, purchases: localPurchases };
+  }
+
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      return { days: localDays, purchases: localPurchases };
+    }
+
+    // Pull from Supabase
+    const [remoteDays, remotePurchases] = await Promise.all([
+      pullDays(),
+      pullPurchases(),
+    ]);
+
+    // Merge strategy: remote data overwrites local for same dates (Supabase is source of truth)
+    const mergedDays = { ...localDays, ...remoteDays };
+
+    // For purchases, use Map to deduplicate by ID
+    const purchaseMap = new Map<string, PowerPurchase>();
+    for (const p of localPurchases) purchaseMap.set(p.id, p);
+    for (const p of remotePurchases) purchaseMap.set(p.id, p);
+    const mergedPurchases = Array.from(purchaseMap.values());
+
+    return {
+      days: mergedDays,
+      purchases: mergedPurchases,
+    };
+  } catch (error) {
+    // If sync fails, just use local data
+    console.error("Auto-sync failed:", error);
+    return { days: localDays, purchases: localPurchases };
+  }
+}
