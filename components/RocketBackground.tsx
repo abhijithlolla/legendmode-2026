@@ -60,10 +60,7 @@ export default function RocketBackground() {
     // Animation loop
     const animate = () => {
       // Clear canvas with semi-transparent overlay
-      ctx.fillStyle = "rgba(20, 20, 30, 0.15)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Update and draw rockets
+      ctx.clearRect(0, 0, canvas.width, canvas.height);      // Update and draw rockets
       const rockets = rocketsRef.current;
       for (let i = rockets.length - 1; i >= 0; i--) {
         const rocket = rockets[i];
