@@ -37,7 +37,8 @@ export default function RocketBackground() {
     // Create new rockets at intervals
     const launchInterval = setInterval(() => {
       for (let i = 0; i < ROCKETS_PER_CYCLE; i++) {
-const startX = canvas.width * (0 + Math.random() * 0.15); // Start from left edge        const startY = canvas.height * 0.85;
+const startX = canvas.width * (0 + Math.random() * 0.15); // Start from left edge
+        const startY = canvas.height * 0.85;
         
         
         // Velocity: upward and slightly diagonal
