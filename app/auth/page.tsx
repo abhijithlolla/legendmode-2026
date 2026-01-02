@@ -38,8 +38,7 @@ export default function AuthPage() {
     setStatus(isSignUp ? "Creating account..." : "Signing in...");
 
     if (isSignUp) {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
+    const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectUrl } });      if (error) {
         setStatus(`Error: ${error.message}`);
       } else {
         setStatus("Account created! Check your email to confirm your account.");
