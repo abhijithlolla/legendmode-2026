@@ -72,6 +72,7 @@ export default function Home() {
     const syncData = async () => {
       try {
 if (!authChecked) return;
+                const synced = await autoSync(days, powerPurchases);
         setDays(synced.days);
         setPowerPurchases(synced.purchases);
         setLastSyncedAt(new Date().toISOString());
