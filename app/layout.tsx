@@ -13,11 +13,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Legend Mode 2026",
+  title: "Legend Mode 2026 | Dominate Your Habits",
   description:
-    "Daily habit tracker PWA with points, streaks, levels, and power-ups.",
+    "The elite habit tracking protocol for 2026. Gamified disciplines, high-fidelity analytics, and professional-grade streaks.",
   manifest: "/manifest.webmanifest",
-  applicationName: "Legend Mode 2026",
+  applicationName: "Legend Mode",
+  appleWebApp: {
+    capable: true,
+    title: "Legend Mode",
+    statusBarStyle: "black-translucent",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Legend Mode 2026",
+    title: "Legend Mode | Elite Performance Protocol",
+    description: "Transform your habits into superpowers. Experience the most immersive discipline system ever built.",
+    url: "https://www.mytracker.in",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Legend Mode 2026",
+    description: "The professional discipline protocol for builders and winners.",
+  },
   icons: {
     icon: "/favicon.ico",
   },

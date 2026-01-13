@@ -18,7 +18,8 @@ export const HABITS: Habit[] = [
   { id: "sunlight", name: "Morning Sunlight", points: 5 },
 ];
 
-export const BASE_MAX = HABITS.reduce((s, h) => s + h.points, 0); // 100
+export const BASE_MAX = 100; // Target score for a "Perfect" day
+export const FREE_HABIT_LIMIT = 5; // Generous free limit to hook users
 
 export type DayEntry = {
   date: string; // YYYY-MM-DD
