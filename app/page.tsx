@@ -44,22 +44,19 @@ export default function Home() {
     setMinimalMode(p.minimalMode ?? false);
   }, []);
 
-  // Require auth: if Supabase is configured and user not signed in, redirect to /auth
+  // Optional auth: check if user is signed in but don't force redirect
   useEffect(() => {
     let unsub: (() => void) | undefined;
     if (!supabase) {
-      // If Supabase isn't configured, skip gating to allow local-only mode
       setAuthChecked(true);
       return;
     }
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.replace("/auth");
-      }
       setAuthChecked(true);
+      // User can use the app whether signed in or not
     });
     const sub = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session?.user) router.replace("/auth");
+      // Just update state, don't force redirect
     });
     unsub = () => sub.data.subscription.unsubscribe();
     return () => {
@@ -178,13 +175,8 @@ export default function Home() {
   const mantra = getMantra(streakDays, entry, recentPassCount);
   const compact = minimalMode;
 
-  if (supabase && !authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-zinc-400">
-        Checking authentication...
-      </div>
-    );
-  }
+  // Removed auth gate - users can now use the app without signing in
+
 
   return (
     <div className="min-h-screen">
