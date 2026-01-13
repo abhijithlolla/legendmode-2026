@@ -1,5 +1,6 @@
 "use client";
 import { Level } from "@/lib/scoring";
+import { motion } from "framer-motion";
 
 type Props = {
   date: string;
@@ -25,7 +26,11 @@ export default function ScoreCard({
   level,
 }: Props) {
   return (
-    <div className="rounded-2xl border border-zinc-800 p-4 bg-zinc-900/50">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl p-4 glass-card"
+    >
       <div className="text-xs text-zinc-400">{date}</div>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <span className="text-lg font-semibold">{basePoints}/100</span>
@@ -44,23 +49,23 @@ export default function ScoreCard({
         <span className="ml-auto text-sm text-zinc-300">Day Score: <span className="text-yellow-400">{dayScore}</span></span>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
-        <div className="rounded-xl bg-zinc-800/60 p-3">
+        <motion.div whileHover={{ scale: 1.02 }} className="rounded-xl bg-white/5 p-3 border border-white/5">
           <div className="text-zinc-400">Cumulative</div>
           <div className="text-yellow-400 font-semibold">{totalPoints}</div>
-        </div>
-        <div className="rounded-xl bg-zinc-800/60 p-3">
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.02 }} className="rounded-xl bg-white/5 p-3 border border-white/5">
           <div className="text-zinc-400">Available</div>
           <div className="text-[color:var(--accent-pass)] font-semibold">{availablePoints}</div>
-        </div>
-        <div className="rounded-xl bg-zinc-800/60 p-3">
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.02 }} className="rounded-xl bg-white/5 p-3 border border-white/5">
           <div className="text-zinc-400">Streak</div>
           <div className="font-semibold">{streakDays}d</div>
-        </div>
+        </motion.div>
       </div>
-      <div className="mt-3 rounded-xl bg-zinc-800/60 p-3 text-sm">
+      <motion.div whileHover={{ scale: 1.01 }} className="mt-3 rounded-xl bg-white/5 p-3 text-sm border border-white/5">
         <div className="text-zinc-400">Level</div>
         <div className="font-semibold">{level.name} • {level.threshold}+ pts</div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

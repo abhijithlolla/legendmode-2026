@@ -15,8 +15,10 @@ import { pullDays, pullPurchases, pushDay, pushPurchase, autoSync } from "@/lib/
 import { supabase } from "@/lib/supabase";
 import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
-import RocketBackground from "@/components/RocketBackground";
+const RocketBackground = dynamic(() => import("@/components/RocketBackground"), { ssr: false });
 import { confettiBurst, confettiMega } from "@/lib/confetti";
+import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 
 export default function Home() {
   const router = useRouter();
@@ -68,12 +70,12 @@ export default function Home() {
   // Auto-sync with Supabase on app load
   useEffect(() => {
     68
-      return;
-    
+    return;
+
     const syncData = async () => {
       try {
-if (!authChecked) return;
-                const synced = await autoSync(days, powerPurchases);
+        if (!authChecked) return;
+        const synced = await autoSync(days, powerPurchases);
         setDays(synced.days);
         setPowerPurchases(synced.purchases);
         setLastSyncedAt(new Date().toISOString());
@@ -81,7 +83,7 @@ if (!authChecked) return;
         console.error("Auto-sync on load failed:", error);
       }
     };
-    
+
     syncData();
   }, [authChecked]);
 
@@ -133,7 +135,7 @@ if (!authChecked) return;
     // background push if signed in
     if (supabase) {
       supabase.auth.getUser().then(({ data }) => {
-        if (data.user) pushDay(dateKey, current).catch(() => {});
+        if (data.user) pushDay(dateKey, current).catch(() => { });
       });
     }
 
@@ -166,7 +168,7 @@ if (!authChecked) return;
     // background push if signed in
     if (supabase) {
       supabase.auth.getUser().then(({ data }) => {
-        if (data.user) pushPurchase(rec).catch(() => {});
+        if (data.user) pushPurchase(rec).catch(() => { });
       });
     }
   }
@@ -186,12 +188,24 @@ if (!authChecked) return;
 
   return (
     <div className="min-h-screen">
-            <RocketBackground />
-      <header className="sticky top-0 z-10 border-b border-zinc-800 bg-[#1a1a1a]/80 backdrop-blur">
+      <RocketBackground />
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#1a1a1a]/60 backdrop-blur-xl">
         <div className={`mx-auto max-w-3xl px-4 ${compact ? "py-2" : "py-3"} flex items-center justify-between`}>
           <div className="flex items-center gap-3">
-            <h1 className="text-lg font-semibold">Legend Mode 2026</h1>
-            <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs">🔥 {streakDays}d</span>
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent"
+            >
+              Legend Mode 2026
+            </motion.h1>
+            <motion.span
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="rounded-full border border-orange-500/30 bg-orange-500/10 px-2 py-0.5 text-xs font-bold text-orange-400"
+            >
+              🔥 {streakDays}d
+            </motion.span>
           </div>
           <button
             onClick={() => setMinimalMode((v) => !v)}
@@ -257,16 +271,21 @@ if (!authChecked) return;
 
         <Calendar selected={selected} days={days} onSelect={setSelected} />
 
-        <div className={`rounded-2xl border border-zinc-800 ${compact ? "p-3" : "p-4"} bg-zinc-900/50`}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className={`rounded-2xl ${compact ? "p-3" : "p-4"} glass-card`}
+        >
           <div className="mb-3 flex items-center justify-between">
-            <div className="text-sm text-zinc-400">10 Daily Habits</div>
+            <div className="text-sm font-medium text-zinc-400 uppercase tracking-widest text-[10px]">Daily Habits</div>
             <div className="flex gap-2">
-              <button onClick={() => setAll(true)} className="rounded-lg border border-zinc-700 px-3 py-1 text-xs hover:bg-zinc-800">All</button>
-              <button onClick={() => setAll(false)} className="rounded-lg border border-zinc-700 px-3 py-1 text-xs hover:bg-zinc-800">None</button>
+              <button onClick={() => setAll(true)} className="rounded-lg border border-white/5 px-3 py-1 text-xs hover:bg-white/10 transition-colors">All</button>
+              <button onClick={() => setAll(false)} className="rounded-lg border border-white/5 px-3 py-1 text-xs hover:bg-white/10 transition-colors">None</button>
             </div>
           </div>
           <HabitList completed={entry.completed} onToggle={toggleHabit} />
-        </div>
+        </motion.div>
 
         {!compact && <Charts days={days} />}
 
