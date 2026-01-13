@@ -35,31 +35,29 @@ export default function Calendar({ selected, days, onSelect }: Props) {
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   return (
-    <div className="rounded-2xl border border-zinc-800 p-3 bg-zinc-900/50">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between px-1">
         <button
-          className="rounded-lg border border-zinc-700 px-3 py-1 text-xs hover:bg-zinc-800"
+          className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-500 hover:text-white"
           onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
         >
-          Prev
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
-        <div className="text-sm font-medium">{monthLabel}</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-200">{monthLabel}</div>
         <button
-          className="rounded-lg border border-zinc-700 px-3 py-1 text-xs hover:bg-zinc-800"
+          className="p-2 rounded-xl hover:bg-white/5 transition-colors text-zinc-500 hover:text-white"
           onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
         >
-          Next
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </button>
       </div>
 
-      <div className="mb-1 grid grid-cols-7 text-center text-xs text-zinc-400">
+      <div className="grid grid-cols-7 gap-1">
         {weekdays.map((w) => (
-          <div key={w} className="py-1">
-            {w}
+          <div key={w} className="py-2 text-[9px] font-black uppercase tracking-widest text-zinc-600 text-center">
+            {w[0]}
           </div>
         ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
         {grid.map((d) => {
           const key = fmt(d);
           const inMonth = d.getMonth() === cursor.getMonth();
@@ -67,26 +65,23 @@ export default function Calendar({ selected, days, onSelect }: Props) {
           const entry = days[key];
           const pass = entry?.pass;
           const hasAny = entry && (entry.basePoints ?? 0) > 0;
-          const dotClass = pass
-            ? "bg-[color:var(--accent-pass)]"
-            : hasAny
-            ? "bg-yellow-500"
-            : "bg-zinc-700";
+
           return (
             <button
               key={key}
               onClick={() => onSelect(key)}
-              className={`h-12 rounded-lg border text-sm flex items-center justify-center relative ${
-                isSelected
-                  ? "border-[color:var(--accent-pass)] bg-[color:var(--accent-pass)]/10 text-[color:var(--accent-pass)]"
-                  : inMonth
-                  ? "border-zinc-700 hover:bg-zinc-800"
-                  : "border-zinc-800 text-zinc-500"
-              }`}
-              title={key}
+              className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all duration-300 relative group
+                ${isSelected ? "bg-white/10 ring-1 ring-white/20" : "hover:bg-white/5"}
+                ${!inMonth && "opacity-20"}`}
             >
-              {d.getDate()}
-              <span className={`absolute bottom-1 h-1.5 w-1.5 rounded-full ${dotClass}`} />
+              <span className={`text-[10px] font-bold ${isSelected ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"}`}>
+                {d.getDate()}
+              </span>
+              {hasAny && (
+                <div className={`mt-1 h-1 w-1 rounded-full 
+                  ${pass ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"}`}
+                />
+              )}
             </button>
           );
         })}

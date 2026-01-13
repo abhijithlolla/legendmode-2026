@@ -179,111 +179,139 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative overflow-hidden">
       <RocketBackground />
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#1a1a1a]/60 backdrop-blur-xl">
-        <div className={`mx-auto max-w-3xl px-4 ${compact ? "py-2" : "py-3"} flex items-center justify-between`}>
-          <div className="flex items-center gap-3">
-            <motion.h1
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent"
+
+      {/* Immersive Header */}
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-black/20 backdrop-blur-2xl">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center text-black font-bold shadow-lg shadow-emerald-500/20"
             >
-              Legend Mode 2026
-            </motion.h1>
+              LM
+            </motion.div>
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-xl font-bold tracking-tight text-gradient"
+              >
+                Legend Mode 2026
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-xs text-zinc-500 font-medium"
+              >
+                {mantra}
+              </motion.p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
             <motion.span
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="rounded-full border border-orange-500/30 bg-orange-500/10 px-2 py-0.5 text-xs font-bold text-orange-400"
+              className="hidden sm:flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400 neon-glow-amber"
             >
-              🔥 {streakDays}d
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              STREAK: {streakDays}d
             </motion.span>
+            <button
+              onClick={() => setMinimalMode((v) => !v)}
+              className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-400 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+            >
+              {minimalMode ? "Expand" : "Compact"}
+            </button>
           </div>
-          <button
-            onClick={() => setMinimalMode((v) => !v)}
-            className="rounded-lg border border-zinc-700 px-2 py-1 text-xs hover:bg-zinc-800"
-            aria-label="Toggle minimal mode"
-          >
-            {minimalMode ? "Comfort" : "Minimal"}
-          </button>
         </div>
-        <div className="mx-auto max-w-3xl px-4 pb-2 text-xs text-zinc-400">{mantra}</div>
       </header>
-      <main className={`mx-auto max-w-3xl px-4 ${compact ? "py-3 space-y-3" : "py-4 space-y-4"}`}>
-        <AuthPanel />
 
-        <div className="flex gap-2">
-          <button
-            onClick={async () => {
-              // Pull from Supabase and merge
-              setSyncStatus("Syncing...");
-              const [remoteDays, remotePurch] = await Promise.all([pullDays(), pullPurchases()]);
-              // naive merge: remote overwrites same dates; purchases concatenated (dedupe by id)
-              const mergedDays = { ...days, ...remoteDays };
-              const existing = new Map(powerPurchases.map((p) => [p.id, p]));
-              for (const r of remotePurch) existing.set(r.id, r);
-              const mergedPurch = Array.from(existing.values());
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-              // recompute totals from merged days
-              const newTotal = Object.values(mergedDays).reduce((s, e) => s + e.scoreWithBonuses, 0);
-              setDays(mergedDays);
-              setTotalPoints(newTotal);
-              setPowerPurchases(mergedPurch);
-              const ts = new Date().toISOString();
-              setLastSyncedAt(ts);
-              setSyncStatus("Synced");
-              setTimeout(() => setSyncStatus(""), 2000);
-            }}
-            className="rounded-lg border border-zinc-700 px-3 py-1 text-xs hover:bg-zinc-800"
-          >
-            Sync Now
-          </button>
-          {lastSyncedAt && (
-            <div className="self-center text-xs text-zinc-400">
-              Last synced: {new Date(lastSyncedAt).toLocaleString()}
+          {/* Main Content Area */}
+          <div className="lg:col-span-8 space-y-8">
+            <AuthPanel />
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center justify-between px-2">
+                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">Core Disciplines</h2>
+                <div className="flex gap-2">
+                  <button onClick={() => setAll(true)} className="rounded-lg border border-white/5 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:bg-white/10 hover:text-white transition-all">Select All</button>
+                  <button onClick={() => setAll(false)} className="rounded-lg border border-white/5 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:bg-white/10 hover:text-white transition-all">Reset</button>
+                </div>
+              </div>
+
+              <div className="glass-surface rounded-[2rem] p-6">
+                <HabitList completed={entry.completed} onToggle={toggleHabit} />
+              </div>
+            </motion.div>
+
+            {!compact && <Charts days={days} />}
+          </div>
+
+          {/* HUD / Sidebar Area */}
+          <aside className="lg:col-span-4 space-y-6">
+            <ScoreCard
+              date={selected}
+              basePoints={entry.basePoints}
+              pass={entry.pass}
+              perfect={entry.perfect}
+              dayScore={entry.scoreWithBonuses}
+              totalPoints={totalPoints}
+              availablePoints={availablePoints}
+              streakDays={streakDays}
+              level={level}
+            />
+
+            <div className="glass-surface rounded-3xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Timeline</h3>
+                <div className="flex gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
+                </div>
+              </div>
+              <Calendar selected={selected} days={days} onSelect={setSelected} />
             </div>
-          )}
-          {syncStatus && (
-            <div className="self-center text-xs text-[color:var(--accent-pass)]">{syncStatus}</div>
-          )}
+
+            <PowerUps availablePoints={availablePoints} onPurchase={purchase} />
+
+            <div
+              className="glass-surface rounded-2xl p-4 flex items-center justify-between group cursor-pointer"
+              onClick={() => setSyncStatus("Syncing...")}
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Cloud Status</div>
+                  <div className="text-xs font-semibold text-zinc-300">
+                    {syncStatus || (lastSyncedAt ? `Updated ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Local Only")}
+                  </div>
+                </div>
+              </div>
+              <div className="text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </div>
+            </div>
+          </aside>
         </div>
 
-        <ScoreCard
-          date={selected}
-          basePoints={entry.basePoints}
-          pass={entry.pass}
-          perfect={entry.perfect}
-          dayScore={entry.scoreWithBonuses}
-          totalPoints={totalPoints}
-          availablePoints={availablePoints}
-          streakDays={streakDays}
-          level={level}
-        />
-        <ProgressBar value={entry.basePoints} pass={entry.pass} perfect={entry.perfect} />
-
-        <Calendar selected={selected} days={days} onSelect={setSelected} />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className={`rounded-2xl ${compact ? "p-3" : "p-4"} glass-card`}
-        >
-          <div className="mb-3 flex items-center justify-between">
-            <div className="text-sm font-medium text-zinc-400 uppercase tracking-widest text-[10px]">Daily Habits</div>
-            <div className="flex gap-2">
-              <button onClick={() => setAll(true)} className="rounded-lg border border-white/5 px-3 py-1 text-xs hover:bg-white/10 transition-colors">All</button>
-              <button onClick={() => setAll(false)} className="rounded-lg border border-white/5 px-3 py-1 text-xs hover:bg-white/10 transition-colors">None</button>
-            </div>
-          </div>
-          <HabitList completed={entry.completed} onToggle={toggleHabit} />
-        </motion.div>
-
-        {!compact && <Charts days={days} />}
-
-        <PowerUps availablePoints={availablePoints} onPurchase={purchase} />
-
-        <footer className="py-8 text-center text-xs text-zinc-500">PWA ready • Install from browser menu to home screen</footer>
+        <footer className="mt-20 py-8 border-t border-white/5 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600">
+            Legend Mode 2026 • Professional Discipline Protocol
+          </p>
+        </footer>
       </main>
     </div>
   );

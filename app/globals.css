@@ -3,10 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --background: #1a1a1a;
-  --foreground: #ededed;
-  --accent-pass: #00ff88; /* PASS green */
-  --accent-points: #ffd700; /* gold */
+  --background: #09090b;
+  --foreground: #fafafa;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-blue: #3b82f6;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
 }
 
 @theme inline {
@@ -16,24 +20,51 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Already dark by default; keep media rule for systems expecting it */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1a1a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Inter, system-ui, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-.glass-card {
-  @apply bg-zinc-900/40 backdrop-blur-md border border-white/10;
+.glass-surface {
+  @apply bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-2xl;
 }
 
-.glass-card-hover {
-  @apply transition-all duration-300 hover:bg-zinc-800/50 hover:border-white/20;
+.glass-interactive {
+  @apply transition-all duration-300 hover:bg-white/[0.07] hover:border-white/20 hover:shadow-emerald-500/10;
+}
+
+.neon-glow-emerald {
+  box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.3);
+}
+
+.neon-glow-amber {
+  box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.3);
+}
+
+.text-gradient {
+  @apply bg-gradient-to-br from-white via-white to-zinc-500 bg-clip-text text-transparent;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
