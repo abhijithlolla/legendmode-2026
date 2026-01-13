@@ -32,12 +32,13 @@ body {
 }
 
 .glass-surface {
-  @apply bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-2xl;
+  @apply bg-black/40 backdrop-blur-md border border-white/20 shadow-2xl;
 }
 
 .glass-interactive {
-  @apply transition-all duration-300 hover:bg-white/[0.07] hover:border-white/20 hover:shadow-emerald-500/10;
+  @apply transition-all duration-300 hover:bg-white/[0.05] hover:border-emerald-500/30 hover:shadow-emerald-500/5;
 }
+
 
 .neon-glow-emerald {
   box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.3);
@@ -67,4 +68,36 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+@layer utilities {
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }

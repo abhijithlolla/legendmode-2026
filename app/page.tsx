@@ -15,10 +15,8 @@ import { pullDays, pullPurchases, pushDay, pushPurchase, autoSync } from "@/lib/
 import { supabase } from "@/lib/supabase";
 import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
-const RocketBackground = dynamic(() => import("@/components/RocketBackground"), { ssr: false });
-import { confettiBurst, confettiMega } from "@/lib/confetti";
-import { motion, AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
+import AmbientBackground from "@/components/AmbientBackground";
+import { BentoGrid, BentoItem } from "@/components/BentoGrid";
 
 export default function Home() {
   const router = useRouter();
@@ -179,8 +177,8 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <RocketBackground />
+    <div className="min-h-screen relative overflow-hidden text-zinc-100">
+      <AmbientBackground />
 
       {/* Immersive Header */}
       <header className="sticky top-0 z-50 border-b border-white/5 bg-black/20 backdrop-blur-2xl">
@@ -231,35 +229,24 @@ export default function Home() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-          {/* Main Content Area */}
-          <div className="lg:col-span-8 space-y-8">
+        <BentoGrid>
+          {/* Header/Status Area */}
+          <BentoItem colSpan={3} className="flex flex-col justify-between">
             <AuthPanel />
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
-            >
-              <div className="flex items-center justify-between px-2">
-                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500">Core Disciplines</h2>
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-emerald-400/70">Core Disciplines</h2>
                 <div className="flex gap-2">
-                  <button onClick={() => setAll(true)} className="rounded-lg border border-white/5 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:bg-white/10 hover:text-white transition-all">Select All</button>
-                  <button onClick={() => setAll(false)} className="rounded-lg border border-white/5 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:bg-white/10 hover:text-white transition-all">Reset</button>
+                  <button onClick={() => setAll(true)} className="text-[10px] font-bold uppercase text-zinc-500 hover:text-white transition-colors">Select All</button>
+                  <button onClick={() => setAll(false)} className="text-[10px] font-bold uppercase text-zinc-500 hover:text-white transition-colors">Reset</button>
                 </div>
               </div>
+              <HabitList completed={entry.completed} onToggle={toggleHabit} />
+            </div>
+          </BentoItem>
 
-              <div className="glass-surface rounded-[2rem] p-6">
-                <HabitList completed={entry.completed} onToggle={toggleHabit} />
-              </div>
-            </motion.div>
-
-            {!compact && <Charts days={days} />}
-          </div>
-
-          {/* HUD / Sidebar Area */}
-          <aside className="lg:col-span-4 space-y-6">
+          {/* HUD Area */}
+          <BentoItem colSpan={1} className="flex flex-col gap-6">
             <ScoreCard
               date={selected}
               basePoints={entry.basePoints}
@@ -271,41 +258,43 @@ export default function Home() {
               streakDays={streakDays}
               level={level}
             />
+          </BentoItem>
 
-            <div className="glass-surface rounded-3xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Timeline</h3>
-                <div className="flex gap-1.5">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-700" />
-                </div>
-              </div>
-              <Calendar selected={selected} days={days} onSelect={setSelected} />
-            </div>
+          {/* Timeline / Calendar */}
+          <BentoItem colSpan={1} className="flex flex-col gap-4">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Timeline</h3>
+            <Calendar selected={selected} days={days} onSelect={setSelected} />
+          </BentoItem>
 
+          {/* Charts/Analytics */}
+          {!compact && (
+            <BentoItem colSpan={2}>
+              <Charts days={days} />
+            </BentoItem>
+          )}
+
+          {/* PowerUps & Sync */}
+          <BentoItem colSpan={1} className="flex flex-col gap-4">
             <PowerUps availablePoints={availablePoints} onPurchase={purchase} />
 
             <div
-              className="glass-surface rounded-2xl p-4 flex items-center justify-between group cursor-pointer"
+              className="mt-auto glass-surface rounded-2xl p-4 flex items-center justify-between group cursor-pointer border-emerald-500/10 hover:border-emerald-500/30 transition-colors"
               onClick={() => setSyncStatus("Syncing...")}
             >
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Cloud Status</div>
-                  <div className="text-xs font-semibold text-zinc-300">
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">Cloud Status</div>
+                  <div className="text-[11px] font-semibold text-zinc-300">
                     {syncStatus || (lastSyncedAt ? `Updated ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : "Local Only")}
                   </div>
                 </div>
               </div>
-              <div className="text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </div>
             </div>
-          </aside>
-        </div>
+          </BentoItem>
+        </BentoGrid>
 
         <footer className="mt-20 py-8 border-t border-white/5 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600">
