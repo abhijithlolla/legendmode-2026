@@ -17,6 +17,8 @@ import ProgressBar from "@/components/ProgressBar";
 import { countRecentPasses, getMantra } from "@/lib/motivation";
 import AmbientBackground from "@/components/AmbientBackground";
 import { BentoGrid, BentoItem } from "@/components/BentoGrid";
+import { confettiBurst, confettiMega } from "@/lib/confetti";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const router = useRouter();
